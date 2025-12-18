@@ -39,6 +39,8 @@ resource "aws_security_group" "app_sg" {
   }
 }
 
+# --------------------------- EC2 MODULE ---------------------------
+
 module "ec2" {
   source          = "./modules/ec2"
   ami_id          = var.ami_id
