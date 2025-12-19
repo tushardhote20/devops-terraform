@@ -4,6 +4,6 @@ terraform {
     key    = "app/flipkart/dev/terraform.tfstate"
     region = "ap-south-1"
     
-    use_lockfile = "true"
+    #use_lockfile = "true"
   }
 }
