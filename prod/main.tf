@@ -5,7 +5,7 @@ provider "aws" {
 #--------------------------- VPC MODULE ---------------------------
 
 module "vpc" {
-  source               = "./modules/vpc"
+  source               = "git::https://github.com/tushardhote20/devops-terraform.git//modules/vpc?ref=main"
   vpc_cidr             = var.vpc_cidr
   public_subnet_cidrs  = var.public_subnet_cidrs
   azs                  = var.azs
@@ -50,7 +50,7 @@ resource "aws_security_group" "app_sg" {
 # --------------------------- EC2 MODULE ---------------------------
 
 module "ec2" {
-  source          = "./modules/ec2"
+  source          = "git::https://github.com/tushardhote20/devops-terraform.git//modules/ec2?ref=main"
   ami_id          = var.ami_id
   instance_type   = "t3.micro"
   subnet_id       = module.vpc.public_subnets[0]

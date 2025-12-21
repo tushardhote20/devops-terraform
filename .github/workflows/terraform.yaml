@@ -16,6 +16,10 @@ on:
     branches: 
       - main
 
+permissions:
+  contents: read
+  id-token: write
+  
 jobs:
   terraform:
     name: Terraform
@@ -27,15 +31,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.0  # change to your version
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.OIDC }}
           aws-region: ${{ env.AWS_REGION }}
