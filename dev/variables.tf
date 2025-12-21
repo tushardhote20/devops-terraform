@@ -17,3 +17,16 @@ variable "public_subnet_cidrs" {
 variable "azs" {
   type = list(string)
 }
+
+variable "vpc_name" {
+  type        = string
+
+}
+
+variable "ec2_name" {
+  type        = string
+}
+
+variable "sg_name" {
+  type        = string
+}
