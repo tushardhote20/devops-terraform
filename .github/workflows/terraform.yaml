@@ -12,10 +12,6 @@ on:
           - nonprod
           - prod
 
-  push: 
-    branches: 
-      - main
-
 permissions:
   contents: read
   id-token: write
@@ -26,8 +22,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: ap-south-1  # change to your region
+      AWS_REGION: ap-south-1
       TF_WORKING_DIR: ./
+      TF_ENV: ${{ github.event.inputs.environment }}
 
     steps:
       - name: Checkout code
@@ -36,7 +33,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.0  # change to your version
+          terraform_version: 1.6.0
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -46,14 +43,19 @@ jobs:
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform init -backend-config="environment=${{ github.event.inputs.environment }}"
+        run: |
+          terraform init \
+            -backend-config="bucket=tusharbucket123.com" \
+            -backend-config="region=ap-south-1" \
+            -backend-config="key=app/flipkart/${{ env.TF_ENV }}/terraform.tfstate"
 
       - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform plan -out=tfplan -var-file="${{ github.event.inputs.environment }}.tfvars"
-
+        run: |
+          terraform plan \
+            -var-file="${{ env.TF_ENV }}.tfvars" \
+            -out=tfplan
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform apply -auto-approve tfplan
