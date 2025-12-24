@@ -1,9 +1,11 @@
+variable "environment" {
+  type = string
+}
+
 terraform {
   backend "s3" {
     bucket = "tusharbucket123.com"
-    key    = "app/flipkart/dev/terraform.tfstate"
+    key    = "app/flipkart/${var.environment}/terraform.tfstate"
     region = "ap-south-1"
-    
-    #use_lockfile = "true"
   }
 }
