@@ -11,6 +11,13 @@ on:
           - dev
           - nonprod
           - prod
+      action:
+        description: "Terraform action"
+        required: true
+        type: choice
+        options:
+          - apply
+          - destroy
 
 permissions:
   contents: read
@@ -18,7 +25,6 @@ permissions:
 
 jobs:
   terraform:
-    name: Terraform
     runs-on: ubuntu-latest
 
     env:
@@ -27,16 +33,13 @@ jobs:
       TF_ENV: ${{ github.event.inputs.environment }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.0
 
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.OIDC }}
           aws-region: ${{ env.AWS_REGION }}
@@ -49,13 +52,16 @@ jobs:
             -backend-config="region=ap-south-1" \
             -backend-config="key=app/flipkart/${{ env.TF_ENV }}/terraform.tfstate"
 
-      - name: Terraform Plan
+      - name: Terraform Plan / Destroy
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
-          terraform plan \
-            -var-file="${{ env.TF_ENV }}.tfvars" \
-            -out=tfplan
+          if [ "${{ github.event.inputs.action }}" = "destroy" ]; then
+            terraform destroy -auto-approve -var-file="${{ env.TF_ENV }}.tfvars"
+          else
+            terraform plan -out=tfplan -var-file="${{ env.TF_ENV }}.tfvars"
+          fi
 
       - name: Terraform Apply
+        if: github.event.inputs.action == 'apply'
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform apply -auto-approve tfplan
